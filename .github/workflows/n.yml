@@ -3,7 +3,7 @@ name: Download Model from Dropbox and Create Pull Request
 on:
   push:
     branches:
-      - n  # Change to your desired branch
+      - main  # Change to your desired branch
 
 jobs:
   download:
