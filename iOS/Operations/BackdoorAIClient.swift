@@ -15,20 +15,8 @@ class BackdoorAIClient {
     // Server configuration
     private let baseURL: URL
     
-    // Secure API key - encrypted and accessible internally
-    private static let encryptedAPIKey = "dUc4cTRzMldWWFJHMmpyWGZZVkROWk1WRWRBczhSVS9hN2RQUThpNFVCdnhPWUNEODNwcE11RXRseTZ1VEdibA=="
-    private static let apiKeyPassphrase = "BDG_API_SEED"
-    
-    // Access API key securely
-    internal static var secureAPIKey: String {
-        // Decrypt API key when needed
-        guard let decryptedData = CryptoHelper.shared.decryptAES(encryptedAPIKey, password: apiKeyPassphrase) else {
-            Debug.shared.log(message: "Failed to decrypt API key, using fallback", type: .error)
-            // Fallback to a less permissioned key for safety
-            return "rnd_fallback_restricted_permissions_key"
-        }
-        return String(data: decryptedData, encoding: .utf8) ?? "rnd_2DfFj1QmKeAWcXF5u9Z0oV35kBiN"
-    }
+    // We no longer need an API key for server authentication
+    // Previously encrypted key and passphrase have been removed
     
     // Server endpoints
     private let learnEndpoint = "api/ai/learn"
@@ -53,11 +41,11 @@ class BackdoorAIClient {
     // No configuration update functionality - using secure hardcoded values
     
     // Common headers for all requests
+    // API key authentication has been removed as it's no longer needed
     private var headers: [String: String] {
         return [
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "X-API-Key": BackdoorAIClient.secureAPIKey,
             "User-Agent": "Backdoor-App/\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")"
         ]
     }
