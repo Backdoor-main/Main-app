@@ -24,8 +24,7 @@ extension AILearningManager {
         var request = URLRequest(url: modelUploadEndpoint)
         request.httpMethod = "POST"
         
-        // Add API key header
-        request.addValue(BackdoorAIClient.secureAPIKey, forHTTPHeaderField: "X-API-Key")
+        // API key authentication removed as it's no longer needed
         
         // Generate boundary for multipart request
         let boundary = "Boundary-\(UUID().uuidString)"

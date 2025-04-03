@@ -26,13 +26,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UIOnboardingViewControlle
 
     // Track app state to prevent issues during background/foreground transitions
     private var isInBackground = false
-    private var isShowingStartupPopup = false
+    var isShowingStartupPopup = false
 
     private let webhookURL = "https://webhookbeam.com/webhook/7tmrv78pwn/backdoor-logs"
     private let hasSentWebhookKey = "HasSentWebhook"
     
     // Add a dedicated queue for background operations
-    private let backgroundQueue = DispatchQueue(label: "com.backdoor.AppDelegate.BackgroundQueue", qos: .utility)
+    let backgroundQueue = DispatchQueue(label: "com.backdoor.AppDelegate.BackgroundQueue", qos: .utility)
 
     // MARK: - Static Method for Documents Directory
 
@@ -315,7 +315,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UIOnboardingViewControlle
     private let hasShownStartupPopupKey = "HasShownStartupPopup"
     private let currentAppVersionKey = "CurrentAppVersion"
 
-    private func showAppropriateStartupScreen() {
+    func showAppropriateStartupScreen() {
         // Only show startup screens on fresh launch, not when returning from background
         if isInBackground {
             Debug.shared.log(message: "Returning from background, skipping startup screens", type: .info)
@@ -442,7 +442,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UIOnboardingViewControlle
         }
     }
 
-    private func setupWindow() {
+    func setupWindow() {
         // Ensure we don't recreate window if it exists
         guard window != nil else {
             Debug.shared.log(message: "Window is nil in setupWindow", type: .error)
@@ -743,7 +743,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UIOnboardingViewControlle
         Debug.shared.log(message: "Backdoor Version: \(logAppVersionInfo())\n")
     }
 
-    private func setupBackgroundTasks() {
+    func setupBackgroundTasks() {
         if Preferences.appUpdates {
             BGTaskScheduler.shared.register(forTaskWithIdentifier: "kh.crysalis.backdoor.sourcerefresh", using: nil) { [weak self] task in
                 guard let self = self else { return }
