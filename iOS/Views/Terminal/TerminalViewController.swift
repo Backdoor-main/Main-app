@@ -17,7 +17,7 @@ class TerminalViewController: UIViewController {
     // MARK: - Properties
     private let history = CommandHistory()
     private var isExecuting = false
-    private let logger = Logger.shared
+    private let logger = Debug.shared
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -33,7 +33,7 @@ class TerminalViewController: UIViewController {
         // Welcome message
         appendToTerminal("Terminal Ready\n$ ", isInput: false)
         
-        logger.log("Terminal view controller loaded", category: .ui, type: .info)
+        logger.log(message: "Terminal view controller loaded", type: .info)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -57,7 +57,7 @@ class TerminalViewController: UIViewController {
     
     deinit {
         NotificationCenter.default.removeObserver(self)
-        logger.log("Terminal view controller deallocated", category: .ui, type: .info)
+        logger.log(message: "Terminal view controller deallocated", type: .info)
     }
     
     // MARK: - UI Setup
