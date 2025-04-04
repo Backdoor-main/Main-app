@@ -30,6 +30,12 @@ class SettingsViewController: FRSTableViewController {
     let aiSection = [
         "AI Learning Settings",
     ]
+    
+    let terminalSection = [
+        "Terminal",
+        "Terminal Settings",
+        "Terminal Button"
+    ]
 
     let logsSection = [
         String.localized("SETTINGS_VIEW_CONTROLLER_CELL_VIEW_LOGS"),
@@ -93,12 +99,13 @@ class SettingsViewController: FRSTableViewController {
             displaySection,
             certificateSection,
             aiSection,
+            terminalSection,
             logsSection,
             foldersSection,
             resetSection,
         ]
 
-        sectionTitles = ["", "", "", "", "", "", ""]
+        sectionTitles = ["", "", "", "", "", "", "", ""]
         ensureTableDataHasSections()
     }
 
@@ -220,6 +227,23 @@ extension SettingsViewController {
             case String.localized("SETTINGS_VIEW_CONTROLLER_CELL_SERVER_OPTIONS"):
                 cell.setAccessoryIcon(with: "server.rack")
                 cell.selectionStyle = .default
+                
+            case "Terminal":
+                cell.setAccessoryIcon(with: "terminal")
+                cell.selectionStyle = .default
+                
+            case "Terminal Settings":
+                cell.setAccessoryIcon(with: "gear")
+                cell.selectionStyle = .default
+                
+            case "Terminal Button":
+                let isEnabled = UserDefaults.standard.bool(forKey: "show_terminal_button") ?? true
+                cell.accessoryView = UISwitch().apply { toggle in
+                    toggle.isOn = isEnabled
+                    toggle.onTintColor = .tintColor
+                    toggle.addTarget(self, action: #selector(terminalButtonToggled(_:)), for: .valueChanged)
+                }
+                cell.selectionStyle = .none
 
             case String.localized("SETTINGS_VIEW_CONTROLLER_CELL_VIEW_LOGS"):
                 cell.setAccessoryIcon(with: "newspaper")
@@ -280,6 +304,13 @@ extension SettingsViewController {
                 navigationController?.pushViewController(l, animated: true)
             case "AI Learning Settings":
                 let l = AILearningSettingsViewController(style: .grouped)
+                navigationController?.pushViewController(l, animated: true)
+            case "Terminal":
+                let l = TerminalViewController()
+                let nav = UINavigationController(rootViewController: l)
+                present(nav, animated: true)
+            case "Terminal Settings":
+                let l = TerminalSettingsViewController(style: .grouped)
                 navigationController?.pushViewController(l, animated: true)
             case String.localized("SETTINGS_VIEW_CONTROLLER_CELL_VIEW_LOGS"):
                 let l = LogsViewController()
