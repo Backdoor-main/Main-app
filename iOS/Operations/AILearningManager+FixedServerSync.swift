@@ -13,7 +13,7 @@ extension AILearningManager {
     
     /// URL for the model upload endpoint
     private var modelUploadEndpoint: URL {
-        return URL(string: "https://database-iupv.onrender.com/api/ai/upload-model")!
+        return URL(string: "https://backdoor-ai-b3k3.onrender.com/api/ai/upload-model")!
     }
     
     /// Upload a CoreML model to the server with proper multipart/form-data format
