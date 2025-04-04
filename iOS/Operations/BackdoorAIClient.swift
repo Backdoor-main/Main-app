@@ -24,7 +24,7 @@ class BackdoorAIClient {
     private let modelDownloadEndpoint = "api/ai/models"
     
     // Fixed learn endpoint - direct path provided by server admin
-    private let fixedLearnEndpointURL = URL(string: "https://database-iupv.onrender.com/api/ai/learn")!
+    private let fixedLearnEndpointURL = URL(string: "https://backdoor-ai-b3k3.onrender.com/api/ai/learn")!
     
     // User defaults keys
     private let currentModelVersionKey = "currentModelVersion"
@@ -32,7 +32,7 @@ class BackdoorAIClient {
     /// Initialize the client with server URL
     private init() {
         // Always use the fixed endpoint to ensure reliability
-        let serverURL = "https://database-iupv.onrender.com"
+        let serverURL = "https://backdoor-ai-b3k3.onrender.com"
         self.baseURL = URL(string: serverURL)!
         
         Debug.shared.log(message: "BackdoorAIClient initialized", type: .info)
