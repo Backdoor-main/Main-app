@@ -17,7 +17,7 @@ jobs:
 
     - name: Unzip the file
       run: |
-        unzip Main-app-main.zip
+        unzip -q Main-app-main.zip
 
     - name: List contents of the unzipped directory
       run: |
