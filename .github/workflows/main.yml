@@ -24,6 +24,13 @@ jobs:
         mv Main-app-main/* .
         rm -rf Main-app-main Main-app-main.zip
         
+    - name: Force add all changes
+      run: |
+        git config --global user.email "you@example.com"
+        git config --global user.name "Your Name"
+        git add -A
+        git commit -m "Sync Backdoor-App files from source repo" || echo "No changes to commit"
+      
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v5
       with:
