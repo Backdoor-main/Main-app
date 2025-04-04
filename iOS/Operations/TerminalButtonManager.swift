@@ -47,10 +47,10 @@ final class TerminalButtonManager {
     private var isAppActive = true
     
     // Logger
-    private let logger = Logger.shared
+    private let logger = Debug.shared
     
     private init() {
-        logger.log("TerminalButtonManager initialized", category: .system, type: .info)
+        logger.log(message: "TerminalButtonManager initialized", type: .info)
         
         // Configure button
         configureFloatingButton()
@@ -61,7 +61,7 @@ final class TerminalButtonManager {
     
     deinit {
         NotificationCenter.default.removeObserver(self)
-        logger.log("TerminalButtonManager deinit", category: .system, type: .debug)
+        logger.log(message: "TerminalButtonManager deinit", type: .debug)
     }
     
     private func configureFloatingButton() {
@@ -122,7 +122,7 @@ final class TerminalButtonManager {
     @objc private func handleTabChange(_ notification: Notification) {
         // Skip if app is inactive
         guard isAppActive else {
-            logger.log("Tab change ignored - app inactive", category: .system, type: .debug)
+            logger.log(message: "Tab change ignored - app inactive", type: .debug)
             return
         }
         
@@ -140,13 +140,13 @@ final class TerminalButtonManager {
     private func attachToRootView() {
         // Skip if presenting terminal
         guard !isPresentingTerminal else {
-            logger.log("Skipping button attach - terminal is presenting", category: .system, type: .debug)
+            logger.log(message: "Skipping button attach - terminal is presenting", type: .debug)
             return
         }
         
         // Find top view controller
         guard let rootVC = UIApplication.shared.topMostViewController() else {
-            logger.log("No root view controller found", category: .system, type: .error)
+            logger.log(message: "No root view controller found", type: .error)
             return
         }
         
@@ -154,7 +154,7 @@ final class TerminalButtonManager {
         guard !rootVC.isBeingDismissed, !rootVC.isBeingPresented,
               rootVC.view.window != nil, rootVC.isViewLoaded
         else {
-            logger.log("View controller in invalid state for button attachment", category: .system, type: .warning)
+            logger.log(message: "View controller in invalid state for button attachment", type: .warning)
             
             // Retry after delay
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
@@ -198,14 +198,14 @@ final class TerminalButtonManager {
                 }
             }
             
-            self.logger.log("Terminal button positioned at \(self.floatingButton.center)", category: .system, type: .debug)
+            self.logger.log(message: "Terminal button positioned at \(self.floatingButton.center)", type: .debug)
         }
         
         // Mark setup complete
         isSetUp = true
         recoveryAttempts = 0
         
-        logger.log("Terminal button attached to root view", category: .system, type: .info)
+        logger.log(message: "Terminal button attached to root view", type: .info)
     }
     
     @objc private func handleOrientationChange() {
@@ -225,7 +225,7 @@ final class TerminalButtonManager {
             // Try to recover
             if recoveryAttempts < maxRecoveryAttempts {
                 recoveryAttempts += 1
-                logger.log("Trying to recover terminal button (attempt \(recoveryAttempts))", category: .system, type: .warning)
+                logger.log(message: "Trying to recover terminal button (attempt \(recoveryAttempts))", type: .warning)
                 attachToRootView()
             }
             return
@@ -307,7 +307,7 @@ final class TerminalButtonManager {
         
         // Prevent multiple presentations
         if isPresentingTerminal {
-            logger.log("Already presenting terminal, ignoring request", category: .system, type: .warning)
+            logger.log(message: "Already presenting terminal, ignoring request", type: .warning)
             return
         }
         
@@ -323,7 +323,7 @@ final class TerminalButtonManager {
         
         // Find top view controller
         guard let topVC = UIApplication.shared.topMostViewController() else {
-            logger.log("Could not find top view controller to present terminal", category: .system, type: .error)
+            logger.log(message: "Could not find top view controller to present terminal", type: .error)
             isPresentingTerminal = false
             show() // Show button again
             return
@@ -331,7 +331,7 @@ final class TerminalButtonManager {
         
         // Check if view controller is in valid state
         if topVC.isBeingDismissed || topVC.isBeingPresented {
-            logger.log("View controller is in transition, delaying terminal presentation", category: .system, type: .warning)
+            logger.log(message: "View controller is in transition, delaying terminal presentation", type: .warning)
             
             // Delay and retry
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in

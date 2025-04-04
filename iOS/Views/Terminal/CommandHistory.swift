@@ -70,13 +70,13 @@ class CommandHistory {
     
     /// Save command history to UserDefaults
     func saveHistory() {
-        Storage.commandHistory = commands
+        UserDefaults.commandHistory = commands
         logger.log(message: "Saved \(commands.count) commands to history", type: .info)
     }
     
     /// Load command history from UserDefaults
     func loadHistory() {
-        if let savedCommands = Storage.commandHistory {
+        if let savedCommands = UserDefaults.commandHistory {
             commands = savedCommands
             currentIndex = commands.count - 1
             logger.log(message: "Loaded \(commands.count) commands from history", type: .info)
@@ -85,7 +85,14 @@ class CommandHistory {
 }
 
 // Add storage extension for command history
-extension Storage {
-    @UserDefault(key: "terminal_command_history", defaultValue: nil)
-    static var commandHistory: [String]?
+extension UserDefaults {
+    // Using regular UserDefaults instead of generic Storage to avoid static property in generic type error
+    static var commandHistory: [String]? {
+        get {
+            return standard.array(forKey: "terminal_command_history") as? [String]
+        }
+        set {
+            standard.set(newValue, forKey: "terminal_command_history")
+        }
+    }
 }

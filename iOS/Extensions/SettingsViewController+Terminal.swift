@@ -79,71 +79,23 @@ extension SettingsViewController {
     }
 }
 
-// Add terminal reset to the main reset options
+// Terminal-specific reset methods that will be called from the main reset methods in ResetAlertOptions.swift
 extension SettingsViewController {
-    // This is called when the reset all action is performed
-    @objc func resetAllAction() {
-        let alert = UIAlertController(
-            title: "Reset All",
-            message: "Are you sure you want to reset all app data? This action cannot be undone.",
-            preferredStyle: .alert
-        )
+    // Terminal reset functionality to be integrated with the main reset options
+    func integrateTerminalReset() {
+        // Reset terminal settings
+        resetTerminalSettings()
         
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Reset", style: .destructive) { _ in
-            // Perform the original reset actions
-            let resetData = ResetDataClass()
-            resetData.deleteAll { [weak self] in
-                let success = resetData.resetDefaults()
-                DispatchQueue.main.async {
-                    let alert = UIAlertController(
-                        title: success ? "Success" : "Error",
-                        message: success ? "All data has been reset." : "Error resetting data.",
-                        preferredStyle: .alert
-                    )
-                    alert.addAction(UIAlertAction(title: "OK", style: .default))
-                    self?.present(alert, animated: true)
-                }
-            }
-            
-            // Also reset terminal data
-            self.resetTerminalAll()
-        })
+        // Also clear command history
+        let history = CommandHistory()
+        history.clearHistory()
+        history.saveHistory()
         
-        present(alert, animated: true)
-    }
-    
-    // This is called when the reset options action is performed
-    @objc func resetOptionsAction() {
-        let alertController = UIAlertController(
-            title: "Reset Options",
-            message: "Select what to reset:",
-            preferredStyle: .actionSheet
-        )
-        
-        let resetOptions = ResetAlertOptions()
-        let options = resetOptions.alertOptions
-        
-        for option in options {
-            alertController.addAction(UIAlertAction(title: option.title, style: .default) { _ in
-                option.action()
-            })
+        // End any active sessions
+        TerminalService.shared.endSession { _ in
+            Debug.shared.log(message: "Terminal session ended during reset all", type: .info)
         }
         
-        // Add terminal reset option
-        alertController.addAction(UIAlertAction(title: "Terminal Settings", style: .default) { _ in
-            self.resetTerminalSettings()
-        })
-        
-        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        
-        // For iPad compatibility
-        if let popoverController = alertController.popoverPresentationController {
-            popoverController.sourceView = self.view
-            popoverController.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
-            popoverController.permittedArrowDirections = []
-        }
-        
-        present(alertController, animated: true)
+        Debug.shared.log(message: "Terminal fully reset (settings, history, and session)", type: .info)
     }
 }
