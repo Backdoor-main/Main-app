@@ -21,44 +21,15 @@ typealias TerminalResult<T> = Result<T, TerminalError>
 class TerminalService {
     static let shared = TerminalService()
     
-    private let baseURL: String
-    private let apiKey: String
+    // Hardcoded server credentials as requested
+    private let baseURL = "https://terminal-server-tqo6.onrender.com/"
+    private let apiKey = "B2D4G5"
     private var sessionId: String?
     private var userId: String?
     private let logger = Logger.shared
     
     private init() {
-        // Get values from user settings or use defaults
-        self.baseURL = UserDefaults.standard.string(forKey: "terminal_server_url") ?? "https://backdoor-backend.onrender.com"
-        self.apiKey = UserDefaults.standard.string(forKey: "terminal_api_key") ?? "your-api-key-here"
-        
-        logger.log("TerminalService initialized with URL: \(baseURL)", category: .network, type: .info)
-        
-        // Listen for settings changes
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(settingsDidChange),
-            name: UserDefaults.didChangeNotification,
-            object: nil
-        )
-    }
-    
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
-    
-    @objc private func settingsDidChange() {
-        // Update settings if they change
-        let newURL = UserDefaults.standard.string(forKey: "terminal_server_url") ?? "https://backdoor-backend.onrender.com"
-        let newKey = UserDefaults.standard.string(forKey: "terminal_api_key") ?? "your-api-key-here"
-        
-        // If settings changed, we should invalidate the current session
-        if newURL != baseURL || newKey != apiKey {
-            baseURL = newURL
-            apiKey = newKey
-            sessionId = nil
-            logger.log("Terminal settings changed, session reset", category: .network, type: .info)
-        }
+        logger.log("TerminalService initialized", category: .network, type: .info)
     }
     
     /// Creates a new terminal session for the user

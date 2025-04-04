@@ -10,14 +10,8 @@ import UIKit
 class TerminalSettingsViewController: UITableViewController {
     
     private enum SettingSection: Int, CaseIterable {
-        case serverSettings
         case terminalSettings
         case dangerZone
-    }
-    
-    private enum ServerSetting: Int, CaseIterable {
-        case serverURL
-        case apiKey
     }
     
     private enum TerminalSetting: Int, CaseIterable {
@@ -33,16 +27,7 @@ class TerminalSettingsViewController: UITableViewController {
     private let logger = Logger.shared
     private let defaults = UserDefaults.standard
     
-    // Default settings
-    private var serverURL: String {
-        get { return defaults.string(forKey: "terminal_server_url") ?? "https://backdoor-backend.onrender.com" }
-        set { defaults.set(newValue, forKey: "terminal_server_url") }
-    }
-    
-    private var apiKey: String {
-        get { return defaults.string(forKey: "terminal_api_key") ?? "your-api-key-here" }
-        set { defaults.set(newValue, forKey: "terminal_api_key") }
-    }
+    // Default settings (Server settings removed)
     
     private var fontSize: Int {
         get { return defaults.integer(forKey: "terminal_font_size") }
@@ -81,8 +66,6 @@ class TerminalSettingsViewController: UITableViewController {
         guard let settingSection = SettingSection(rawValue: section) else { return 0 }
         
         switch settingSection {
-        case .serverSettings:
-            return ServerSetting.allCases.count
         case .terminalSettings:
             return TerminalSetting.allCases.count
         case .dangerZone:
@@ -94,8 +77,6 @@ class TerminalSettingsViewController: UITableViewController {
         guard let settingSection = SettingSection(rawValue: section) else { return nil }
         
         switch settingSection {
-        case .serverSettings:
-            return "Server Configuration"
         case .terminalSettings:
             return "Terminal Preferences"
         case .dangerZone:
@@ -109,31 +90,11 @@ class TerminalSettingsViewController: UITableViewController {
         }
         
         switch section {
-        case .serverSettings:
-            return serverSettingsCell(for: indexPath)
         case .terminalSettings:
             return terminalSettingsCell(for: indexPath)
         case .dangerZone:
             return dangerZoneCell(for: indexPath)
         }
-    }
-    
-    private func serverSettingsCell(for indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ValueCell", for: indexPath)
-        guard let setting = ServerSetting(rawValue: indexPath.row) else { return cell }
-        
-        switch setting {
-        case .serverURL:
-            cell.textLabel?.text = "Server URL"
-            cell.detailTextLabel?.text = serverURL
-            cell.accessoryType = .disclosureIndicator
-        case .apiKey:
-            cell.textLabel?.text = "API Key"
-            cell.detailTextLabel?.text = "••••••••••••" // Mask the actual key
-            cell.accessoryType = .disclosureIndicator
-        }
-        
-        return cell
     }
     
     private func terminalSettingsCell(for indexPath: IndexPath) -> UITableViewCell {
@@ -179,23 +140,10 @@ class TerminalSettingsViewController: UITableViewController {
         guard let section = SettingSection(rawValue: indexPath.section) else { return }
         
         switch section {
-        case .serverSettings:
-            handleServerSettingTap(indexPath.row)
         case .terminalSettings:
             handleTerminalSettingTap(indexPath.row)
         case .dangerZone:
             handleDangerZoneTap(indexPath.row)
-        }
-    }
-    
-    private func handleServerSettingTap(_ row: Int) {
-        guard let setting = ServerSetting(rawValue: row) else { return }
-        
-        switch setting {
-        case .serverURL:
-            promptForServerURL()
-        case .apiKey:
-            promptForAPIKey()
         }
     }
     
@@ -222,52 +170,7 @@ class TerminalSettingsViewController: UITableViewController {
     }
     
     // MARK: - Settings Handlers
-    
-    private func promptForServerURL() {
-        let alert = UIAlertController(title: "Server URL", message: "Enter the terminal server URL", preferredStyle: .alert)
-        
-        alert.addTextField { textField in
-            textField.text = self.serverURL
-            textField.placeholder = "https://example.com"
-            textField.keyboardType = .URL
-            textField.autocorrectionType = .no
-            textField.autocapitalizationType = .none
-        }
-        
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Save", style: .default) { _ in
-            if let url = alert.textFields?.first?.text, !url.isEmpty {
-                self.serverURL = url
-                self.tableView.reloadData()
-                self.logger.log("Updated terminal server URL", category: .settings, type: .info)
-            }
-        })
-        
-        present(alert, animated: true)
-    }
-    
-    private func promptForAPIKey() {
-        let alert = UIAlertController(title: "API Key", message: "Enter your API key for the terminal server", preferredStyle: .alert)
-        
-        alert.addTextField { textField in
-            textField.text = self.apiKey
-            textField.placeholder = "your-api-key"
-            textField.isSecureTextEntry = true
-            textField.autocorrectionType = .no
-            textField.autocapitalizationType = .none
-        }
-        
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Save", style: .default) { _ in
-            if let key = alert.textFields?.first?.text, !key.isEmpty {
-                self.apiKey = key
-                self.tableView.reloadData()
-                self.logger.log("Updated terminal API key", category: .settings, type: .info)
-            }
-        })
-        
-        present(alert, animated: true)
-    }
+    // Server settings removed as requested
     
     private func showFontSizePicker() {
         let fontSizes = [10, 12, 14, 16, 18, 20, 24]

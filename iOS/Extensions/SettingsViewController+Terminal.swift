@@ -38,9 +38,7 @@ extension SettingsViewController {
         
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         alert.addAction(UIAlertAction(title: "Reset", style: .destructive) { _ in
-            // Reset terminal settings
-            UserDefaults.standard.removeObject(forKey: "terminal_server_url")
-            UserDefaults.standard.removeObject(forKey: "terminal_api_key")
+            // Reset terminal settings (server settings are now hardcoded)
             UserDefaults.standard.removeObject(forKey: "terminal_font_size")
             UserDefaults.standard.removeObject(forKey: "terminal_color_theme")
             
