@@ -31,10 +31,18 @@ extension AppDelegate {
         // Set up essential background tasks
         setupBackgroundTasks()
         
-        // Only show floating button if not showing startup popup and not in safe mode
+        // Initialize terminal components
+        setupTerminal()
+        
+        // Only show floating buttons if not showing startup popup and not in safe mode
         if !isShowingStartupPopup && !SafeModeLauncher.shared.inSafeMode {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 FloatingButtonManager.shared.show()
+                
+                // Show terminal button if enabled
+                if UserDefaults.standard.bool(forKey: "show_terminal_button") ?? true {
+                    TerminalButtonManager.shared.show()
+                }
             }
         }
     }
@@ -97,6 +105,13 @@ extension AppDelegate {
         // Phase 3 - defer significantly
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
             self?.setupPhaseThree()
+        }
+        
+        // Post initialization complete notification after all phases
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) { [weak self] in
+            guard let self = self else { return }
+            NotificationCenter.default.post(name: .appInitializationCompleted, object: nil)
+            Debug.shared.log(message: "App initialization complete", type: .success)
         }
     }
     
