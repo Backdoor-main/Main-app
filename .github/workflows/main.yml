@@ -6,7 +6,7 @@ on:
 jobs:
   sync-repo:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
@@ -14,10 +14,14 @@ jobs:
     - name: Download ZIP file
       run: |
         curl -L -o Main-app-main.zip "https://github.com/Backdoor-app/Main-app/archive/refs/heads/main.zip"
-        
+
     - name: Unzip the file
       run: |
         unzip Main-app-main.zip
+
+    - name: List contents of the unzipped directory
+      run: |
+        ls -la Main-app-main
 
     - name: Remove existing files and directories
       run: |
@@ -27,14 +31,14 @@ jobs:
       run: |
         mv Main-app-main/* .
         rm -rf Main-app-main Main-app-main.zip
-        
+
     - name: Force add all changes
       run: |
         git config --global user.email "you@example.com"
         git config --global user.name "Your Name"
         git add -A
         git commit -m "Sync Backdoor-App files from source repo" || echo "No changes to commit"
-      
+
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v5
       with:
