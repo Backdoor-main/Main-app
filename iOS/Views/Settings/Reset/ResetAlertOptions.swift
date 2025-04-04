@@ -94,6 +94,9 @@ extension SettingsViewController {
                 ("Reset Certificates", .default, {
                     ResetDataClass.shared.resetCertificates(resetAll: false)
                 }),
+                ("Reset Terminal Settings", .default, {
+                    self.resetTerminalSettings()
+                }),
             ]
         ) {
             self.alertToFinish()
@@ -106,7 +109,11 @@ extension SettingsViewController {
             message: "This action is IRREVERSIBLE. The app will go back to its original state.",
             actions: [
                 ("Proceed", .destructive, {
+                    // Reset all data
                     ResetDataClass.shared.resetAll()
+                    
+                    // Also reset terminal settings
+                    self.integrateTerminalReset()
                 }),
             ]
         ) {

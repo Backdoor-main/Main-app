@@ -15,7 +15,7 @@ class LaunchTerminalViewController: UIViewController {
     private let launchButton = UIButton(type: .system)
     private let iconImageView = UIImageView()
     private let descriptionLabel = UILabel()
-    private let logger = Logger.shared
+    private let logger = Debug.shared
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,7 +26,7 @@ class LaunchTerminalViewController: UIViewController {
         setupUI()
         setupConstraints()
         
-        logger.log("Terminal launch view controller loaded", category: .ui, type: .info)
+        logger.log(message: "Terminal launch view controller loaded", type: .info)
     }
     
     private func setupUI() {
@@ -90,7 +90,7 @@ class LaunchTerminalViewController: UIViewController {
     }
     
     @objc private func launchTerminal() {
-        logger.log("Launching terminal from launch view", category: .ui, type: .info)
+        logger.log(message: "Launching terminal from launch view", type: .info)
         
         let terminalVC = TerminalViewController()
         let navController = UINavigationController(rootViewController: terminalVC)
