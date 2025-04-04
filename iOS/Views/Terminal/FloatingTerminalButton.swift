@@ -18,7 +18,7 @@ class FloatingTerminalButton: UIButton {
     private var panGesture: UIPanGestureRecognizer!
     
     // Logger instance
-    private let logger = Logger.shared
+    private let logger = Debug.shared
     
     // Keys for saving position
     private let positionXKey = "floating_terminal_button_x"
@@ -60,7 +60,7 @@ class FloatingTerminalButton: UIButton {
         // Add target action for tap
         self.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
         
-        logger.log("Floating terminal button initialized", category: .ui, type: .info)
+        logger.log(message: "Floating terminal button initialized", type: .info)
     }
     
     private func setupGestures() {
@@ -80,7 +80,7 @@ class FloatingTerminalButton: UIButton {
         case .began:
             // Animate a slight scale up when dragging begins
             UIView.animate(withDuration: 0.2) {
-                self.transform = CGAffineTransform(scaleX: 1.1, scale: 1.1)
+                self.transform = CGAffineTransform(scaleX: 1.1, y: 1.1)
             }
             
         case .changed:
@@ -157,7 +157,7 @@ class FloatingTerminalButton: UIButton {
         // Post notification to launch terminal
         NotificationCenter.default.post(name: .showTerminal, object: nil)
         
-        logger.log("Floating terminal button tapped", category: .ui, type: .info)
+        logger.log(message: "Floating terminal button tapped", type: .info)
     }
     
     override func didMoveToSuperview() {
