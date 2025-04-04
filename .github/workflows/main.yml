@@ -13,26 +13,26 @@ jobs:
       
     - name: Download ZIP file
       run: |
-        curl -L -o Backdoor-v5-main.zip "https://github.com/Backdoor-v5/Backdoor-v5/archive/refs/heads/main.zip"
+        curl -L -o Main-app-main.zip "https://github.com/Backdoor-app/Main-app/archive/refs/heads/main.zip"
         
     - name: Unzip the file
       run: |
-        unzip Backdoor-v5-main.zip
+        unzip Main-app-main.zip
         
     - name: Move contents to root
       run: |
-        mv Backdoor-v5-main/* .
-        rm -rf Backdoor-v5-main Backdoor-v5-main.zip
+        mv Main-app-main/* .
+        rm -rf Main-app-main Main-app-main.zip
         
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v5
       with:
-        token: ${{ secrets.TRANSFER_SECRET }}
+        token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: "Sync Backdoor-App files from source repo"
         branch: "sync-backdoor-app"
         delete-branch: true
         title: "Sync Backdoor-App files from source repo"
         body: |
           This PR synchronizes the Backdoor-App files from the source repository.
-          Changes include downloading and extracting the latest ZIP from Backdoor-v5 repo.
+          Changes include downloading and extracting the latest ZIP from Backdoor-app repo.
         labels: "automated pr"
