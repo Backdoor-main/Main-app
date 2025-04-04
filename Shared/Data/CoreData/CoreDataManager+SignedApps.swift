@@ -68,17 +68,17 @@ extension CoreDataManager {
 
     /// Get application file path (non-throwing version for compatibility)
     @available(*, deprecated, message: "Use the throwing version getFilesForSignedApps(for:getuuidonly:) instead")
-    func getFilesForSignedApps(for app: SignedApps, getuuidonly: Bool = false) -> URL? {
+    func getFilesForSignedApps(for app: SignedApps, getuuidonly: Bool = false) -> URL {
         do {
             // Directly implement the path construction to avoid circular references
             guard let uuid = app.uuid, let appPath = app.appPath, let dir = app.directory else {
                 Debug.shared.log(message: "Missing required app properties (uuid, appPath, or directory)", type: .error)
-                return nil
+                return URL(fileURLWithPath: "/error/missing_properties")
             }
 
             guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
                 Debug.shared.log(message: "Could not access documents directory", type: .error)
-                return nil
+                return URL(fileURLWithPath: "/error/no_documents_directory")
             }
 
             var path = documentsDirectory
@@ -99,7 +99,7 @@ extension CoreDataManager {
             return path
         } catch {
             Debug.shared.log(message: "Error in getFilesForSignedApps: \(error)", type: .error)
-            return nil
+            return URL(fileURLWithPath: "/error/invalid_path")
         }
     }
 

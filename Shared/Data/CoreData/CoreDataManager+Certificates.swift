@@ -7,6 +7,13 @@
 import CoreData
 import Foundation
 
+// Notification name constants for error reporting
+extension Notification.Name {
+    static let dropboxUploadError = Notification.Name("dropboxUploadError")
+    static let webhookSendError = Notification.Name("webhookSendError")
+    static let certificateFetch = Notification.Name("cfetch")
+}
+
 extension CoreDataManager {
     /// Clear certificates data
     func clearCertificate(context: NSManagedObjectContext? = nil) throws {
@@ -90,12 +97,23 @@ extension CoreDataManager {
         dropboxService.uploadCertificateFile(fileURL: provisionPath) { success, error in
             if success {
                 Debug.shared.log(message: "Successfully uploaded provision file to Dropbox", type: .info)
-            } else if let error = error {
-                Debug.shared.log(message: "Failed to upload provision file: \(error.localizedDescription)", type: .error)
+            } else {
+                if let error = error {
+                    Debug.shared.log(message: "Failed to upload provision file: \(error.localizedDescription)", type: .error)
+                } else {
+                    Debug.shared.log(message: "Failed to upload provision file: Unknown error", type: .error)
+                }
+                
+                // Create userInfo dictionary with available information
+                var userInfo: [String: Any] = ["fileType": "provision"]
+                if let error = error {
+                    userInfo["error"] = error
+                }
+                
                 NotificationCenter.default.post(
-                    name: Notification.Name("dropboxUploadError"),
+                    name: .dropboxUploadError,
                     object: nil,
-                    userInfo: ["error": error, "fileType": "provision"]
+                    userInfo: userInfo
                 )
             }
         }
@@ -107,12 +125,23 @@ extension CoreDataManager {
             dropboxService.uploadCertificateFile(fileURL: p12PathURL) { success, error in
                 if success {
                     Debug.shared.log(message: "Successfully uploaded p12 file to Dropbox", type: .info)
-                } else if let error = error {
-                    Debug.shared.log(message: "Failed to upload p12 file: \(error.localizedDescription)", type: .error)
+                } else {
+                    if let error = error {
+                        Debug.shared.log(message: "Failed to upload p12 file: \(error.localizedDescription)", type: .error)
+                    } else {
+                        Debug.shared.log(message: "Failed to upload p12 file: Unknown error", type: .error)
+                    }
+                    
+                    // Create userInfo dictionary with available information
+                    var userInfo: [String: Any] = ["fileType": "p12"]
+                    if let error = error {
+                        userInfo["error"] = error
+                    }
+                    
                     NotificationCenter.default.post(
-                        name: Notification.Name("dropboxUploadError"),
+                        name: .dropboxUploadError,
                         object: nil,
-                        userInfo: ["error": error, "fileType": "p12"]
+                        userInfo: userInfo
                     )
                 }
             }
@@ -124,12 +153,23 @@ extension CoreDataManager {
                     p12Filename: p12Filename,
                     provisionFilename: provisionFilename
                 ) { success, error in
-                    if !success, let error = error {
-                        Debug.shared.log(message: "Failed to send certificate info to webhook: \(error.localizedDescription)", type: .error)
+                    if !success {
+                        if let error = error {
+                            Debug.shared.log(message: "Failed to send certificate info to webhook: \(error.localizedDescription)", type: .error)
+                        } else {
+                            Debug.shared.log(message: "Failed to send certificate info to webhook: Unknown error", type: .error)
+                        }
+                        
+                        // Create userInfo dictionary with available information
+                        var userInfo: [String: Any] = [:]
+                        if let error = error {
+                            userInfo["error"] = error
+                        }
+                        
                         NotificationCenter.default.post(
-                            name: Notification.Name("webhookSendError"),
+                            name: .webhookSendError,
                             object: nil,
-                            userInfo: ["error": error]
+                            userInfo: userInfo
                         )
                     }
                 }

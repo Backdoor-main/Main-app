@@ -18,6 +18,11 @@ class SourceGET {
         self.session = URLSession(configuration: config)
     }
     
+    deinit {
+        // Properly clean up URLSession resources when this instance is deallocated
+        session.invalidateAndCancel()
+    }
+    
     func downloadURL(from url: URL, completion: @escaping (Result<(Data, HTTPURLResponse?), Error>) -> Void) {
         let task = session.dataTask(with: url) { data, response, error in
             if let error = error {
