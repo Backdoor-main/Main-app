@@ -11,7 +11,7 @@ class CommandHistory {
     private var commands: [String] = []
     private var currentIndex: Int = -1
     private let maxHistorySize = 100
-    private let logger = Logger.shared
+    private let logger = Debug.shared
     
     func addCommand(_ command: String) {
         // Don't add empty commands
@@ -26,7 +26,7 @@ class CommandHistory {
             return
         }
         
-        logger.log("Adding command to history: \(trimmedCommand)", category: .system, type: .info)
+        logger.log(message: "Adding command to history: \(trimmedCommand)", type: .info)
         
         commands.append(trimmedCommand)
         // Limit history size
@@ -63,7 +63,7 @@ class CommandHistory {
     }
     
     func clearHistory() {
-        logger.log("Clearing command history", category: .system, type: .info)
+        logger.log(message: "Clearing command history", type: .info)
         commands.removeAll()
         currentIndex = -1
     }
@@ -71,7 +71,7 @@ class CommandHistory {
     /// Save command history to UserDefaults
     func saveHistory() {
         Storage.commandHistory = commands
-        logger.log("Saved \(commands.count) commands to history", category: .system, type: .info)
+        logger.log(message: "Saved \(commands.count) commands to history", type: .info)
     }
     
     /// Load command history from UserDefaults
@@ -79,7 +79,7 @@ class CommandHistory {
         if let savedCommands = Storage.commandHistory {
             commands = savedCommands
             currentIndex = commands.count - 1
-            logger.log("Loaded \(commands.count) commands from history", category: .system, type: .info)
+            logger.log(message: "Loaded \(commands.count) commands from history", type: .info)
         }
     }
 }

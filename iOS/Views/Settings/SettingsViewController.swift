@@ -239,7 +239,7 @@ extension SettingsViewController {
             case "Terminal Button":
                 let isEnabled = UserDefaults.standard.bool(forKey: "show_terminal_button") ?? true
                 cell.accessoryView = UISwitch().apply { toggle in
-                    toggle.isOn = isEnabled
+                    (toggle as UISwitch).isOn = isEnabled
                     toggle.onTintColor = .tintColor
                     toggle.addTarget(self, action: #selector(terminalButtonToggled(_:)), for: .valueChanged)
                 }

@@ -24,7 +24,7 @@ class TerminalSettingsViewController: UITableViewController {
         case endSession
     }
     
-    private let logger = Logger.shared
+    private let logger = Debug.shared
     private let defaults = UserDefaults.standard
     
     // Default settings (Server settings removed)
@@ -53,7 +53,7 @@ class TerminalSettingsViewController: UITableViewController {
             fontSize = 14 // Default font size
         }
         
-        logger.log("Terminal settings view controller loaded", category: .ui, type: .info)
+        logger.log(message: "Terminal settings view controller loaded", type: .info)
     }
     
     // MARK: - Table view data source
@@ -180,7 +180,7 @@ class TerminalSettingsViewController: UITableViewController {
             let action = UIAlertAction(title: "\(size)pt", style: .default) { _ in
                 self.fontSize = size
                 self.tableView.reloadData()
-                self.logger.log("Updated terminal font size to \(size)pt", category: .settings, type: .info)
+                self.logger.log(message: "Updated terminal font size to \(size)pt", type: .info)
             }
             if size == self.fontSize {
                 action.setValue(true, forKey: "checked")
@@ -207,7 +207,7 @@ class TerminalSettingsViewController: UITableViewController {
             let action = UIAlertAction(title: theme, style: .default) { _ in
                 self.colorTheme = index
                 self.tableView.reloadData()
-                self.logger.log("Updated terminal color theme to \(theme)", category: .settings, type: .info)
+                self.logger.log(message: "Updated terminal color theme to \(theme)", type: .info)
             }
             if index == self.colorTheme {
                 action.setValue(true, forKey: "checked")
@@ -239,7 +239,7 @@ class TerminalSettingsViewController: UITableViewController {
             history.clearHistory()
             history.saveHistory()
             
-            self.logger.log("Cleared terminal command history", category: .settings, type: .info)
+            self.logger.log(message: "Cleared terminal command history", type: .info)
             
             let successAlert = UIAlertController(
                 title: "History Cleared",
@@ -268,7 +268,7 @@ class TerminalSettingsViewController: UITableViewController {
                 DispatchQueue.main.async {
                     switch result {
                     case .success:
-                        self.logger.log("Terminal session ended successfully", category: .settings, type: .info)
+                        self.logger.log(message: "Terminal session ended successfully", type: .info)
                         let successAlert = UIAlertController(
                             title: "Session Ended",
                             message: "Your terminal session has been terminated successfully.",
@@ -278,7 +278,7 @@ class TerminalSettingsViewController: UITableViewController {
                         self.present(successAlert, animated: true)
                         
                     case .failure(let error):
-                        self.logger.log("Failed to end terminal session: \(error.localizedDescription)", category: .settings, type: .error)
+                        self.logger.log(message: "Failed to end terminal session: \(error.localizedDescription)", type: .error)
                         let errorAlert = UIAlertController(
                             title: "Error",
                             message: "Failed to end session: \(error.localizedDescription)",
