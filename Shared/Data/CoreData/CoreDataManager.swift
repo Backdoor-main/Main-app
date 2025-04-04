@@ -90,8 +90,18 @@ final class CoreDataManager {
     func clear<T: NSManagedObject>(request: NSFetchRequest<T>, context: NSManagedObjectContext? = nil) throws {
         do {
             let ctx = try context ?? self.context
-            let deleteRequest = NSBatchDeleteRequest(fetchRequest: (request as? NSFetchRequest<NSFetchRequestResult>)!)
+            
+            // Safe casting without forced unwrapping
+            guard let fetchRequestResult = request as? NSFetchRequest<NSFetchRequestResult> else {
+                let error = NSError(domain: "CoreDataManager", code: 1006, 
+                                   userInfo: [NSLocalizedDescriptionKey: "Could not cast fetch request to NSFetchRequestResult"])
+                Debug.shared.log(message: "Type cast error in clear method: \(error.localizedDescription)", type: .error)
+                throw error
+            }
+            
+            let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequestResult)
             _ = try ctx.execute(deleteRequest)
+            try saveContext(ctx)
         } catch {
             Debug.shared.log(message: "CoreDataManager.clear error: \(error.localizedDescription)", type: .error)
             throw error
@@ -198,8 +208,44 @@ final class CoreDataManager {
 
     func getFilesForDownloadedApps(for app: DownloadedApps, getuuidonly: Bool) throws -> URL {
         let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let uuid = app.uuid ?? UUID().uuidString
-        let url = getuuidonly ? documentsDirectory.appendingPathComponent(uuid) : documentsDirectory.appendingPathComponent("files/\(uuid)")
+        let ctx = try context
+        
+        // Check if app is in correct context
+        if app.managedObjectContext != ctx {
+            guard let objectID = app.objectID, !objectID.isTemporaryID else {
+                throw NSError(domain: "CoreDataManager", code: 1004, 
+                             userInfo: [NSLocalizedDescriptionKey: "App object not in persistent store"])
+            }
+            
+            guard let appInContext = ctx.object(with: objectID) as? DownloadedApps else {
+                throw NSError(domain: "CoreDataManager", code: 1005, 
+                             userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve app in current context"])
+            }
+            
+            // Continue with the context's version of the app
+            return try getFilesPathFromUUID(appInContext, getuuidonly: getuuidonly)
+        }
+        
+        // Get or create UUID and ensure it's saved
+        if app.uuid == nil {
+            app.uuid = UUID()
+            try saveContext(ctx)
+            Debug.shared.log(message: "Created and saved new UUID for app: \(app.name ?? "Unknown")", type: .info)
+        }
+        
+        return try getFilesPathFromUUID(app, getuuidonly: getuuidonly)
+    }
+    
+    // Helper method to get files path from app with valid UUID
+    private func getFilesPathFromUUID(_ app: DownloadedApps, getuuidonly: Bool) throws -> URL {
+        guard let uuid = app.uuid else {
+            throw NSError(domain: "CoreDataManager", code: 1007, 
+                         userInfo: [NSLocalizedDescriptionKey: "App has no UUID even after attempted creation"])
+        }
+        
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let url = getuuidonly ? documentsDirectory.appendingPathComponent(uuid.uuidString) 
+                              : documentsDirectory.appendingPathComponent("files/\(uuid.uuidString)")
 
         // Ensure the directory exists if not getting UUID only
         if !getuuidonly {

@@ -7,29 +7,52 @@
 import Foundation
 
 class SourceGET {
+    // Private session with configuration
+    private let session: URLSession
+    
+    init(timeoutInterval: TimeInterval = 30.0, cachePolicy: URLRequest.CachePolicy = .useProtocolCachePolicy) {
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = timeoutInterval
+        config.timeoutIntervalForResource = 60.0
+        config.requestCachePolicy = cachePolicy
+        self.session = URLSession(configuration: config)
+    }
+    
     func downloadURL(from url: URL, completion: @escaping (Result<(Data, HTTPURLResponse?), Error>) -> Void) {
-        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+        let task = session.dataTask(with: url) { data, response, error in
             if let error = error {
+                Debug.shared.log(message: "Network error: \(error.localizedDescription)", type: .error)
                 completion(.failure(error))
                 return
             }
 
             guard let httpResponse = response as? HTTPURLResponse else {
-                completion(.failure(NSError(domain: "InvalidResponse", code: -1, userInfo: nil)))
+                let error = NSError(domain: "InvalidResponse", code: -1, 
+                                    userInfo: [NSLocalizedDescriptionKey: "Response was not an HTTP response"])
+                Debug.shared.log(message: "Invalid response: Not an HTTP response", type: .error)
+                completion(.failure(error))
                 return
             }
 
             guard (200 ... 299).contains(httpResponse.statusCode) else {
                 let errorDescription = HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)
-                completion(.failure(NSError(domain: "HTTPError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorDescription])))
+                let error = NSError(domain: "HTTPError", code: httpResponse.statusCode, 
+                                    userInfo: [NSLocalizedDescriptionKey: errorDescription])
+                
                 if let data = data, let responseBody = String(data: data, encoding: .utf8) {
-                    Debug.shared.log(message: "HTTP Error Response: \(responseBody)")
+                    Debug.shared.log(message: "HTTP Error Response (\(httpResponse.statusCode)): \(responseBody)", type: .error)
+                } else {
+                    Debug.shared.log(message: "HTTP Error: \(httpResponse.statusCode) - \(errorDescription)", type: .error)
                 }
+                completion(.failure(error))
                 return
             }
 
             guard let data = data else {
-                completion(.failure(NSError(domain: "DataError", code: -1, userInfo: nil)))
+                let error = NSError(domain: "DataError", code: -1,
+                                    userInfo: [NSLocalizedDescriptionKey: "No data received from server"])
+                Debug.shared.log(message: "No data received from server", type: .error)
+                completion(.failure(error))
                 return
             }
 
@@ -38,39 +61,28 @@ class SourceGET {
         task.resume()
     }
 
-    func parse(data: Data) -> Result<SourcesData, Error> {
+    /// Generic parsing method for any Decodable type
+    func parseJSON<T: Decodable>(data: Data) -> Result<T, Error> {
         do {
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .iso8601
-            let source = try decoder.decode(SourcesData.self, from: data)
-            return .success(source)
+            let result = try decoder.decode(T.self, from: data)
+            return .success(result)
         } catch {
             Debug.shared.log(message: "Failed to parse JSON: \(error)", type: .error)
             return .failure(error)
         }
+    }
+    
+    func parse(data: Data) -> Result<SourcesData, Error> {
+        return parseJSON(data: data)
     }
 
     func parseCert(data: Data) -> Result<ServerPack, Error> {
-        do {
-            let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .iso8601
-            let source = try decoder.decode(ServerPack.self, from: data)
-            return .success(source)
-        } catch {
-            Debug.shared.log(message: "Failed to parse JSON: \(error)", type: .error)
-            return .failure(error)
-        }
+        return parseJSON(data: data)
     }
 
     func parsec(data: Data) -> Result<[CreditsPerson], Error> {
-        do {
-            let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .iso8601
-            let source = try decoder.decode([CreditsPerson].self, from: data)
-            return .success(source)
-        } catch {
-            Debug.shared.log(message: "Failed to parse JSON: \(error)", type: .error)
-            return .failure(error)
-        }
+        return parseJSON(data: data)
     }
 }

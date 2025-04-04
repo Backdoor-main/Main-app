@@ -64,14 +64,14 @@ extension CoreDataManager {
 
     /// Get application file path (non-throwing version for compatibility)
     @available(*, deprecated, message: "Use the throwing version getFilesForDownloadedApps(for:getuuidonly:) in CoreDataManager instead")
-    func getDownloadedAppsFilePath(for app: DownloadedApps, getuuidonly: Bool = false) -> URL {
+    func getDownloadedAppsFilePath(for app: DownloadedApps, getuuidonly: Bool = false) -> URL? {
         do {
             // Call the main CoreDataManager implementation
             return try CoreDataManager.shared.getFilesForDownloadedApps(for: app, getuuidonly: getuuidonly)
         } catch {
             Debug.shared.log(message: "Error in getFilesForDownloadedApps: \(error)", type: .error)
-            // Return a fallback URL that doesn't crash when used, but clearly indicates an error
-            return URL(fileURLWithPath: "")
+            // Return nil to indicate failure instead of an empty path
+            return nil
         }
     }
 
@@ -88,7 +88,8 @@ extension CoreDataManager {
     func deleteAllDownloadedAppContentWithThrow(for app: DownloadedApps) throws {
         let ctx = try context
         ctx.delete(app)
-        let fileURL = try CoreDataManager.shared.getFilesForDownloadedApps(for: app, getuuidonly: true)
+        // Use self instead of shared to ensure consistent context usage
+        let fileURL = try self.getFilesForDownloadedApps(for: app, getuuidonly: true)
         try FileManager.default.removeItem(at: fileURL)
         try ctx.save()
     }

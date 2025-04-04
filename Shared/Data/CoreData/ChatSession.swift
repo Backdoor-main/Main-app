@@ -35,8 +35,10 @@ public class ChatSession: NSManagedObject {
 public extension ChatSession {
     @objc var wrappedMessages: [ChatMessage] {
         let set = messages as? Set<ChatMessage> ?? []
+        // Capture current date once for all nil timestamp comparisons
+        let now = Date()
         return set.sorted {
-            $0.timestamp ?? Date() < $1.timestamp ?? Date()
+            ($0.timestamp ?? now) < ($1.timestamp ?? now)
         }
     }
 
