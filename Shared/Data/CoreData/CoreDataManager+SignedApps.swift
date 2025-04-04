@@ -73,12 +73,12 @@ extension CoreDataManager {
             // Directly implement the path construction to avoid circular references
             guard let uuid = app.uuid, let appPath = app.appPath, let dir = app.directory else {
                 Debug.shared.log(message: "Missing required app properties (uuid, appPath, or directory)", type: .error)
-                return URL(fileURLWithPath: "")
+                return URL(fileURLWithPath: "/error/missing_properties")
             }
 
             guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
                 Debug.shared.log(message: "Could not access documents directory", type: .error)
-                return URL(fileURLWithPath: "")
+                return URL(fileURLWithPath: "/error/no_documents_directory")
             }
 
             var path = documentsDirectory
@@ -99,7 +99,7 @@ extension CoreDataManager {
             return path
         } catch {
             Debug.shared.log(message: "Error in getFilesForSignedApps: \(error)", type: .error)
-            return URL(fileURLWithPath: "")
+            return URL(fileURLWithPath: "/error/invalid_path")
         }
     }
 
@@ -180,8 +180,30 @@ extension CoreDataManager {
     }
 
     func setUpdateAvailable(for app: SignedApps, newVersion: String) throws {
-        app.hasUpdate = true
-        app.updateVersion = newVersion
+        let ctx = try context
+        
+        // Ensure app is in the right context
+        if app.managedObjectContext != ctx {
+            // App is from a different context, fetch it in the current context
+            guard let objectID = app.objectID, !objectID.isTemporaryID else {
+                throw NSError(domain: "CoreDataManager", code: 1004, 
+                             userInfo: [NSLocalizedDescriptionKey: "App object not in persistent store"])
+            }
+            
+            guard let appInContext = ctx.object(with: objectID) as? SignedApps else {
+                throw NSError(domain: "CoreDataManager", code: 1005, 
+                             userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve app in current context"])
+            }
+            
+            // Update properties on the object in the correct context
+            appInContext.hasUpdate = true
+            appInContext.updateVersion = newVersion
+        } else {
+            // App is already in the right context
+            app.hasUpdate = true
+            app.updateVersion = newVersion
+        }
+        
         try saveContext()
     }
 

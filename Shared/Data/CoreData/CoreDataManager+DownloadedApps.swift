@@ -71,7 +71,8 @@ extension CoreDataManager {
         } catch {
             Debug.shared.log(message: "Error in getFilesForDownloadedApps: \(error)", type: .error)
             // Return a fallback URL that doesn't crash when used, but clearly indicates an error
-            return URL(fileURLWithPath: "")
+            // Maintaining original return type for backward compatibility
+            return URL(fileURLWithPath: "/error/invalid_path")
         }
     }
 
@@ -88,7 +89,8 @@ extension CoreDataManager {
     func deleteAllDownloadedAppContentWithThrow(for app: DownloadedApps) throws {
         let ctx = try context
         ctx.delete(app)
-        let fileURL = try CoreDataManager.shared.getFilesForDownloadedApps(for: app, getuuidonly: true)
+        // Use self instead of shared to ensure consistent context usage
+        let fileURL = try self.getFilesForDownloadedApps(for: app, getuuidonly: true)
         try FileManager.default.removeItem(at: fileURL)
         try ctx.save()
     }
