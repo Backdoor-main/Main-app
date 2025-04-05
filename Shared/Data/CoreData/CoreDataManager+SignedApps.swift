@@ -185,12 +185,12 @@ extension CoreDataManager {
         // Ensure app is in the right context
         if app.managedObjectContext != ctx {
             // App is from a different context, fetch it in the current context
-            guard let objectID = app.objectID, !objectID.isTemporaryID else {
+            if app.objectID.isTemporaryID {
                 throw NSError(domain: "CoreDataManager", code: 1004, 
                              userInfo: [NSLocalizedDescriptionKey: "App object not in persistent store"])
             }
             
-            guard let appInContext = ctx.object(with: objectID) as? SignedApps else {
+            guard let appInContext = ctx.object(with: app.objectID) as? SignedApps else {
                 throw NSError(domain: "CoreDataManager", code: 1005, 
                              userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve app in current context"])
             }
